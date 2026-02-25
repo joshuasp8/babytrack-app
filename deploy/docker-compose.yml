@@ -1,0 +1,30 @@
+# Replace `my-service` with the service name
+# Assumes the presence of an external Docker network called `web` (on our VPS)
+services:
+  app:
+    image: ghcr.io/joshuasp8/babytrack:latest
+    container_name: babytrack
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    networks:
+      - web
+      - app-network
+
+    labels:
+      caddy: babytrack.app.joshuaspeight.com
+      caddy.reverse_proxy: "{{upstreams 8080}}"
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 128M
+
+networks:
+  web:
+    external: true
+  app-network:
+    external: true

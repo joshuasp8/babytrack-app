@@ -1,0 +1,89 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SERVICE_NAME: babytrack
+      ENV_FILE: ${{ secrets.ENV_FILE }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/arm64
+          push: true
+          tags: ghcr.io/joshuasp8/${{ env.SERVICE_NAME }}:latest
+      
+      - name: Prepare remote deployment directory
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            mkdir -p /services/${{ env.SERVICE_NAME }}
+            echo "${{ env.ENV_FILE }}" | tee /services/${{ env.SERVICE_NAME }}/.env
+
+      - name: Copy docker-compose.yml to remote
+        uses: appleboy/scp-action@v1
+        with:
+            host: ${{ secrets.SSH_HOST }}
+            username: ${{ secrets.SSH_USER }}
+            key: ${{ secrets.SSH_PRIVATE_KEY }}
+            source: "deploy/docker-compose.yml"
+            strip_components: 1 # Remove the deploy/ prefix from the destination path
+            target: "/services/${{ env.SERVICE_NAME }}"
+
+      - name: Ensure Postgres database exists
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd /services/${{ env.SERVICE_NAME }}
+
+            # Create DB if it doesn't exist
+            docker exec postgres psql -U postgres -tc \
+            "SELECT 1 FROM pg_database WHERE datname = 'babytrack'" \
+            | grep -q 1 \
+            || docker exec postgres psql -U postgres -c \
+            "CREATE DATABASE babytrack"
+
+            # Create schema if it doesn't exist
+            docker exec postgres psql -U postgres -d babytrack -c \
+            "CREATE SCHEMA IF NOT EXISTS babytrack;"
+
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd /services/${{ env.SERVICE_NAME }}
+
+            docker compose pull
+            docker compose up -d
+            docker image prune -f

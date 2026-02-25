@@ -1,0 +1,37 @@
+# Binaries
+#  - App specific
+babytrack
+main
+__debug_bin*
+
+#  - General
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# OS Specific
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+# we use this 3 line combo to ignore all .vscode files except launch.json
+.vscode/*
+!.vscode/
+!.vscode/launch.json
+
+*.swp
+
+# Deployments
+.env
+
+# Project Specific
+cookies.txt
