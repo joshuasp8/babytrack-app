@@ -1,16 +1,16 @@
-# Contributing to Todo API
+# Contributing to BabyTrack API
 
 Thank you for your interest in contributing!
 
 ## Project Overview
 
-This project is a simple Todo API written in Go. It follows a clean architecture pattern to separate concerns and make the code testable and maintainable.
+BabyTrack is a Go REST API for tracking baby feeding events. It follows a clean architecture pattern to separate concerns and make the code testable and maintainable.
 
 ### Architecture
 
 The application is structured in layers:
 
-1.  **Transport Layer**: HTTP handlers (`internal/todo/handler.go`, `internal/health/`, `internal/version/`)
+1.  **Transport Layer**: HTTP handlers (`internal/feed/handler.go`, `internal/health/`, `internal/version/`)
 2.  **Middleware Layer**: Request processing pipeline (`pkg/middleware/`)
     - Recovery (panic handling)
     - Request ID (tracing)
@@ -18,8 +18,8 @@ The application is structured in layers:
     - Rate Limit (IP-based request throttling)
     - CORS (cross-origin)
     - Auth (JWT validation)
-3.  **Service Layer**: Business logic (`internal/todo/service.go`)
-4.  **Repository Layer**: Data access (`internal/todo/repository.go`)
+3.  **Service Layer**: Business logic and validation (`internal/feed/service.go`)
+4.  **Repository Layer**: Data access (`internal/feed/repository.go`)
 5.  **Auth Layer**: JWT authentication (`pkg/auth/`)
 6.  **Config Layer**: Configuration management (`internal/config/`)
 
@@ -33,17 +33,11 @@ The application is structured in layers:
     -   **Authentication**: Obtain a valid JWT and place it in `cookies.txt` if one does not already exist (see `scripts/cookies.txt.template`) to run local verification.
 3.  **Make your changes**. Please ensure your code follows standard Go formatting (`go fmt`).
 4.  **Run Tests**:
-    -   Note: Handlers now require an authenticated user in the context. See `internal/todo/handler_test.go` for examples of how to mock this.
+    -   Note: Handlers require an authenticated user in the context. See `internal/feed/handler_test.go` for examples of how to mock this.
     ```bash
     go test -v ./...
     ```
-5.  **Verify**: Manually verify the changes using `curl` or Postman if needed.
-
-OR: Run the verification shell script to test the full flow (Create -> List -> Update -> Delete):
-
-```bash
-./scripts/verify.sh
-```
+5.  **Verify**: Manually verify the changes using `curl` or the dev server.
 
 ## Frontend Development
 
@@ -111,3 +105,4 @@ If you need to change the database schema:
 -   Use `gofmt` to format your code.
 -   Keep handler logic simple; move complex business logic to the service layer.
 -   Ensure new features have corresponding unit tests.
+-   All data access must be user-scoped: always filter queries by `user_id`.

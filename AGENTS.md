@@ -4,13 +4,13 @@ This file provides context for AI agents working on this codebase.
 
 ## Project Summary
 
-A simple, clean-architecture Go REST API for managing Todos.
+BabyTrack is a Go REST API for tracking baby feeding events.
 State is persisted in **Postgres**. The application runs migrations on startup.
 
 ## Key Locations
 
 -   **Entry Point**: `cmd/main.go` - Wires up dependencies, runs migrations, implements graceful shutdown.
--   **Domain Logic**: `internal/todo/` - Handlers, service, repository, models for Todo domain.
+-   **Domain Logic**: `internal/feed/` - Handlers, service, repository, and models for the Feed domain.
 -   **Frontend**: `frontend/` - Vanilla JS / Web Components application.
 -   **Health & Version**: `internal/health/`, `internal/version/` - Health check and version endpoints.
 -   **Authentication**: `pkg/auth/` - JWT token validation and user claims.
@@ -52,18 +52,35 @@ Public routes (`/health`, `/version`) bypass the auth middleware.
 -   **Tech Stack**: Lit Web Components (`LitElement`), Vanilla ES6 Modules for models (JSDoc typed), CSS Variables. No build step (uses import maps).
 -   **Serving**: Frontend assets are embedded in the Go binary using `//go:embed` and served via `http.FileServer` mounted at `/`.
 -   **API Integration**: `frontend/services/api.js` handles `fetch` calls to `/api/v1/` and maps responses to native ES6 classes.
--   **Component Model**: 
-    -   `<todo-app>`: Main container and state manager (`LitElement`).
-    -   `<todo-item>`: Individual item with scoped Lit styles (`LitElement`).
 
-## Common Tasks
+## Feed Domain (`internal/feed/`)
 
-### Adding a New Field to Todo
+All feed data is **user-scoped**: every query and mutation is filtered by `user_id` derived from the JWT claims.
+
+### API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/v1/feeds` | List all feeds for the authenticated user |
+| `GET` | `/api/v1/feeds/{id}` | Get a single feed |
+| `POST` | `/api/v1/feeds` | Create a new feed |
+| `PUT` | `/api/v1/feeds/{id}` | Update a feed |
+| `DELETE` | `/api/v1/feeds/{id}` | Delete a feed |
+| `POST` | `/api/v1/feeds/import` | Bulk import from localStorage (idempotent upsert) |
+
+### Feed Types & Validation
+-   `type`: must be `breast`, `bottle`, or `formula` (enforced in service layer).
+-   `breastSideStartedOn`: must be `left`, `right`, or `null`.
+
+### Adding a New Field to Feed
 
 1.  Create a new migration file in `migrations/` to alter the table.
-2.  Update `Todo` struct in `internal/todo/model.go`.
-3.  Update `CreateTodoRequest` / `UpdateTodoRequest` in `internal/todo/handler.go` if input is needed.
-4.  Update `Service` (if needed) and `Repository` (SQL queries) logic.
+2.  Update `Feed` struct in `internal/feed/model.go`.
+3.  Update `CreateFeedRequest` / `UpdateFeedRequest` / `ImportFeedItem` in `internal/feed/model.go`.
+4.  Update `Repository` SQL queries in `internal/feed/repository.go`.
+5.  Update `Service` validation if needed in `internal/feed/service.go`.
+
+## Common Tasks
 
 ### Adding Middleware
 
@@ -80,9 +97,9 @@ Public routes (`/health`, `/version`) bypass the auth middleware.
         middleware.NewRateLimitMiddleware(), // Add here
         middleware.LoggerMiddleware(),
     )
-    
+
     // Route-specific (authenticated routes only)
-    todoRouter := handler.Router(
+    feedRouter := handler.Router(
         middleware.CorsMiddleware(cfg.CorsAllowedOrigins),
         middleware.AuthCookieMiddleware(jwtAuthenticator, cfg.AuthCookieName),
         middleware.NewCustomMiddleware(), // Add here
@@ -91,21 +108,20 @@ Public routes (`/health`, `/version`) bypass the auth middleware.
 
 ### Adding a New Endpoint
 
-1.  Add the handler method in `internal/todo/handler.go`.
-2.  Register the route in the `Router()` method within `internal/todo/handler.go`.
+1.  Add the handler method in `internal/feed/handler.go`.
+2.  Register the route in the `Router()` method within `internal/feed/handler.go`.
     ```go
     // Example:
-    router.Get("/todos/new-route", this.newHandler)
+    router.Get("/api/v1/feeds/stats", this.statsHandler)
     ```
 
 ## Testing
 
--   **Unit Tests**: `internal/todo/handler_test.go` covers handler logic.
--   **Verification**: Run the verification shell script to test the full flow (Create -> List -> Update -> Delete):
-
-```bash
-./scripts/verify.sh
-```
+-   **Unit Tests**: `internal/feed/handler_test.go` covers handler logic using the `InMemoryRepository`.
+-   **Run all tests**:
+    ```bash
+    go test ./...
+    ```
 
 ## Key Patterns
 

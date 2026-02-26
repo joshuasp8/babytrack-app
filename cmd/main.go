@@ -1,6 +1,15 @@
 package main
 
 import (
+	embeddings "babytrack"
+	"babytrack/internal/config"
+	"babytrack/internal/feed"
+	"babytrack/internal/health"
+	"babytrack/internal/version"
+	"babytrack/pkg/auth"
+	"babytrack/pkg/middleware"
+	"babytrack/pkg/migration"
+	"babytrack/pkg/router"
 	"context"
 	"database/sql"
 	"fmt"
@@ -11,15 +20,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-	embeddings "babytrack"
-	"babytrack/internal/config"
-	"babytrack/internal/health"
-	"babytrack/internal/todo"
-	"babytrack/internal/version"
-	"babytrack/pkg/auth"
-	"babytrack/pkg/middleware"
-	"babytrack/pkg/migration"
-	"babytrack/pkg/router"
 )
 
 func main() {
@@ -56,9 +56,9 @@ func main() {
 		log.Fatal("Failed attempting to create JWT authenticator: ", err.Error())
 	}
 
-	repository := todo.NewPostgresRepository(db)
-	service := todo.NewService(repository)
-	todoHandler := todo.NewHttpHandler(service)
+	repository := feed.NewPostgresRepository(db)
+	service := feed.NewService(repository)
+	feedHandler := feed.NewHttpHandler(service)
 
 	var authMiddleware func(http.Handler) http.Handler
 	if cfg.DevAuthEnabled {
@@ -69,7 +69,7 @@ func main() {
 	}
 
 	// Create main router with auth middleware
-	todoRouter := todoHandler.Router(
+	feedRouter := feedHandler.Router(
 		// Middleware stack for authenticated routes
 		middleware.CorsMiddleware(cfg.CorsAllowedOrigins),
 		authMiddleware,
@@ -88,10 +88,10 @@ func main() {
 	rootRouter.Get("/api/v1/health", health.NewHealthHandler(db))
 	rootRouter.Get("/api/v1/version", version.NewVersionHandler())
 
-	// Mount authenticated todo routes under /api/ precedence
-	// Note: todoRouter routes are absolute (/api/v1/...), so mounting at /api/ ensures they are matched
+	// Mount authenticated feed routes under /api/ precedence
+	// Note: feedRouter routes are absolute (/api/v1/...), so mounting at /api/ ensures they are matched
 	// and take precedence over the root file server.
-	rootRouter.Handle("/api/", todoRouter)
+	rootRouter.Handle("/api/", feedRouter)
 
 	// Serve frontend static files
 	// Use embedded filesystem
