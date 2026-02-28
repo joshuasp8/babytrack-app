@@ -71,7 +71,6 @@ func main() {
 	// Create main router with auth middleware
 	feedRouter := feedHandler.Router(
 		// Middleware stack for authenticated routes
-		middleware.CorsMiddleware(cfg.CorsAllowedOrigins),
 		authMiddleware,
 	)
 
@@ -82,6 +81,7 @@ func main() {
 		middleware.RequestIDMiddleware(),
 		middleware.LoggerMiddleware(),
 		middleware.NewRateLimitMiddleware(50, time.Minute), // Simple rate limit: 50 req/min per IP
+		middleware.CorsMiddleware(cfg.CorsAllowedOrigins),
 	)
 
 	// Public routes (no auth required)
