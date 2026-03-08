@@ -42,6 +42,14 @@ type UpdateFeedRequest struct {
 	Notes                string    `json:"notes"`
 }
 
+type FeedResponse struct {
+	Feed *Feed `json:"feed"`
+}
+
+type FeedListResponse struct {
+	Feeds []*Feed `json:"feeds"`
+}
+
 // ImportFeedItem represents a single feed entry from a localStorage export.
 // Id and StartTime are required; rows missing these or Type will be skipped.
 type ImportFeedItem struct {
