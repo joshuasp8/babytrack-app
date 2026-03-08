@@ -8,7 +8,7 @@ const AUTH_BASE_URL = 'https://auth.api.joshuaspeight.com/api/v1/auth';
 // const AUTH_BASE_URL = 'http://localhost:8080/api/v1/auth';
 
 /** Redirect URL sent with login requests. The auth server redirects here after email verification. */
-const REDIRECT_URL = 'https://babytrack.pages.dev';
+const REDIRECT_URL = 'https://babytrack.app.joshuaspeight.com';
 // const REDIRECT_URL = 'http://localhost:8000';
 
 /** localStorage key for cached user profile. */
