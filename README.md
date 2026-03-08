@@ -1,6 +1,6 @@
-# Todo API
+# BabyTrack API
 
-A simple proof-of-concept Todo API written in Go.
+A simple proof-of-concept BabyTrack API written in Go.
 
 ## Project Structure
 
@@ -9,7 +9,7 @@ This project follows a standard Go project layout:
 -   `cmd/`: Main applications for this project.
     -   `main.go`: Entry point for the API server with graceful shutdown support.
 -   `internal/`: Private application and library code.
-    -   `todo/`: Core Todo domain logic (handlers, service, repository, models).
+    -   `feed/`: Core Feed domain logic (handlers, service, repository, models).
     -   `health/`: Health check handler with database connectivity test.
     -   `version/`: Version endpoint for deployment tracking.
     -   `config/`: Configuration loading and validation.
