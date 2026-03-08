@@ -4,7 +4,7 @@ Thank you for your interest in contributing!
 
 ## Project Overview
 
-BabyTrack is a Go REST API for tracking baby feeding events. It follows a clean architecture pattern to separate concerns and make the code testable and maintainable.
+BabyTrack is a full-stack infant stats tracker. The Go backend serves a REST API with Postgres persistence, and the Lit-based frontend is embedded in the binary via `//go:embed`. Both live in this monorepo. The project follows a clean architecture pattern to separate concerns and make the code testable and maintainable.
 
 ### Architecture
 
@@ -44,8 +44,18 @@ The application is structured in layers:
 The frontend is built with **Lit** (a lightweight web component library) and ES6 Modules. It lives in `frontend/`.
 
 - **No Build Step**: The code is standard ES6+ and runs directly in modern browsers using an import map for vendor dependencies (like Lit).
-- **Testing**: Run `npm test` in the `frontend/` directory (requires Node.js).
+- **Testing**: Run `npm test` in the `frontend/` directory (requires Node.js). Tests use the Node.js native test runner with mocked browser APIs.
 - **Standalone Mode**: You can run the frontend in isolation using `./frontend/start-server` (served on port 8000). Use `go run cmd/main.go` to test the embedded integration.
+
+### Frontend Architecture & Coding Standards
+
+-   **No Heavy Frameworks**: Lit for reactivity, no React/Angular/build steps.
+-   **Premium Aesthetics**: Dark mode default. Use the defined CSS variables in `src/styles/main.css`.
+-   **Shadow DOM + Shared Styles**: Components use Shadow DOM for encapsulation. Common tokens are CSS Variables defined in `main.css`; common utility classes (`.btn`, `.input`) live in `src/styles/shared-styles.js` and are imported via `static styles = [sharedStyles, css\`...\`]`.
+-   **Logic Separation**: Business logic in `src/services/`, UI logic in `src/components/`.
+-   **State Management**: Parent (`bt-app`) orchestrates state via services; children emit custom events (e.g., `feed-added`), parent updates and passes data back down via properties.
+-   **Render Decomposition**: Break complex `render()` methods into small helpers (e.g., `_renderHeader()`, `_renderForm()`).
+-   **Reusable Components**: Build self-contained, portable components. Compose internally (e.g., `<login-modal>` inside `<profile-icon>`). Use custom events for communication and properties for configuration.
 
 ### Local Authentication
 
@@ -102,7 +112,14 @@ If you need to change the database schema:
 
 ## Coding Standards
 
+### Backend (Go)
 -   Use `gofmt` to format your code.
 -   Keep handler logic simple; move complex business logic to the service layer.
 -   Ensure new features have corresponding unit tests.
 -   All data access must be user-scoped: always filter queries by `user_id`.
+
+### Frontend (JavaScript)
+-   Use explicit, descriptive names for classes, variables, and files. Avoid abbreviations.
+-   Keep business logic in `src/services/` and UI logic in `src/components/`.
+-   Extract SVG icons into `src/components/common/icons.js`.
+-   Run `npm test` in `frontend/` after changes.

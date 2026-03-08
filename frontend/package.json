@@ -3,6 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "test": "node --test tests/*.js"
+        "test": "node --test tests/*.js",
+        "build": "rm -rf dist && mkdir dist && cp -r src/* dist/"
     }
 }

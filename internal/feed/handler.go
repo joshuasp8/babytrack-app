@@ -31,6 +31,11 @@ func (h *FeedHttpHandler) Router(mx ...router.Middleware) http.Handler {
 	return r
 }
 
+/**
+ * @api {get} /api/v1/feeds Get all feeds
+ * @apiName GetFeeds
+ * @apiSuccess {FeedListResponse} response contains Array of feeds
+ */
 func (h *FeedHttpHandler) getAll(w http.ResponseWriter, r *http.Request) {
 	userID, err := extractCurrentUserID(r)
 	if err != nil {
@@ -51,6 +56,11 @@ func (h *FeedHttpHandler) getAll(w http.ResponseWriter, r *http.Request) {
 	httputils.WriteJsonResponseOk(w, feeds)
 }
 
+/**
+ * @api {get} /api/v1/feeds/{id} Get feed by ID
+ * @apiName GetFeedById
+ * @apiSuccess {FeedResponse} response contains Feed
+ */
 func (h *FeedHttpHandler) getById(w http.ResponseWriter, r *http.Request) {
 	userID, err := extractCurrentUserID(r)
 	if err != nil {
@@ -72,6 +82,11 @@ func (h *FeedHttpHandler) getById(w http.ResponseWriter, r *http.Request) {
 	httputils.WriteJsonResponseOk(w, feed)
 }
 
+/**
+ * @api {post} /api/v1/feeds Create feed
+ * @apiName CreateFeed
+ * @apiSuccess {FeedResponse} response contains Feed
+ */
 func (h *FeedHttpHandler) create(w http.ResponseWriter, r *http.Request) {
 	userID, err := extractCurrentUserID(r)
 	if err != nil {
@@ -93,6 +108,11 @@ func (h *FeedHttpHandler) create(w http.ResponseWriter, r *http.Request) {
 	httputils.WriteJsonResponse(w, feed, http.StatusCreated)
 }
 
+/**
+ * @api {put} /api/v1/feeds/{id} Update feed
+ * @apiName UpdateFeed
+ * @apiSuccess {FeedResponse} response contains Feed
+ */
 func (h *FeedHttpHandler) update(w http.ResponseWriter, r *http.Request) {
 	userID, err := extractCurrentUserID(r)
 	if err != nil {
@@ -120,6 +140,10 @@ func (h *FeedHttpHandler) update(w http.ResponseWriter, r *http.Request) {
 	httputils.WriteJsonResponseOk(w, feed)
 }
 
+/**
+ * @api {delete} /api/v1/feeds/{id} Delete feed
+ * @apiName DeleteFeed
+ */
 func (h *FeedHttpHandler) delete(w http.ResponseWriter, r *http.Request) {
 	userID, err := extractCurrentUserID(r)
 	if err != nil {
@@ -140,8 +164,11 @@ func (h *FeedHttpHandler) delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// importFeeds accepts a bulk payload from a localStorage export.
-// Idempotent: uses upsert so it is safe to re-run.
+/**
+ * @api {post} /api/v1/feeds/import Import feeds
+ * @apiName ImportFeeds
+ * @apiSuccess {Object} response contains imported and skipped counts
+ */
 func (h *FeedHttpHandler) importFeeds(w http.ResponseWriter, r *http.Request) {
 	userID, err := extractCurrentUserID(r)
 	if err != nil {

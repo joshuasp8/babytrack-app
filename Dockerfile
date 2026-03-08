@@ -16,7 +16,7 @@ ARG TARGETOS
 ARG TARGETARCH
 
 # 4. Version info injected at build time
-ARG APP_VERSION=0.0.1
+ARG APP_VERSION=0.0.2
 
 # 5. Build with version and build time baked in via ldflags
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
