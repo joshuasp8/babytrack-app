@@ -1,10 +1,10 @@
-# BabyTrack API
+# BabyTrack 🍼
 
-A simple proof-of-concept BabyTrack API written in Go.
+A full-stack infant stats tracker. The Go backend serves a REST API and an embedded Lit-based frontend, all from a single binary.
 
 ## Project Structure
 
-This project follows a standard Go project layout:
+This project follows a standard Go project layout with an embedded frontend:
 
 -   `cmd/`: Main applications for this project.
     -   `main.go`: Entry point for the API server with graceful shutdown support.
@@ -19,6 +19,11 @@ This project follows a standard Go project layout:
     -   `httputils/`: HTTP response helpers.
     -   `router/`: Custom router wrapper.
     -   `migration/`: Database migration logic.
+-   `frontend/`: Lit-based Web Components frontend (see `frontend/README.md`).
+    -   `src/components/`: UI components (Lit Web Components).
+    -   `src/services/`: Business logic, API clients, and data persistence.
+    -   `tests/`: Frontend unit tests (Node.js test runner).
+-   `embeddings.go`: `//go:embed` directives that bundle the frontend and migrations into the binary.
 -   `migrations/`: SQL migration files.
 -   `scripts/`: Helper scripts for development and operations.
 
@@ -125,8 +130,8 @@ go build -ldflags "-X babytrack/internal/version.Version=1.0.0" cmd/main.go
 
 ## Features
 
-- ✅ **REST API** for Todo management (CRUD operations)
-- ✅ **Modern Frontend:** Lit-based Web Components and ES6 Modules (served at `/`)
+### Backend
+- ✅ **REST API** for Feed management (CRUD + bulk import)
 - ✅ **JWT Authentication** via HTTP-only cookies
 - ✅ **Request Logging** with request IDs, status codes, and duration
 - ✅ **Rate Limiting** via in-memory IP tracking to prevent abuse
@@ -135,6 +140,14 @@ go build -ldflags "-X babytrack/internal/version.Version=1.0.0" cmd/main.go
 - ✅ **Version Endpoint** for deployment verification
 - ✅ **Graceful Shutdown** for zero-downtime deployments
 - ✅ **PostgreSQL** persistence with auto-migrations
+
+### Frontend
+- ✅ **Lit Web Components** with no build step (ES Modules + import maps)
+- ✅ **Feed Tracking**: Breast, bottle, and formula feeds with smart inputs and quick durations
+- ✅ **Sleep Tracking**: Live timer, daily totals, and quick log presets
+- ✅ **Live Feed Timer**: Drift-proof banked+delta timer with per-side breast tracking
+- ✅ **Two-Mode Data Layer**: localStorage when logged out, backend API when logged in, with automatic one-time import on first login
+- ✅ **Premium Dark UI**: CSS variables, glassmorphism touches, and responsive design
 
 ## Deployment
 
@@ -157,43 +170,15 @@ To deploy directly to the VPS from your local development environment:
     - Ensure the PostgreSQL database and schema exist on the VPS.
     - Load the image, bring up the services using `docker compose up -d`, and clean up the archive.
 
-## API Endpoints & Sample Payloads
+## API Endpoints
 
-You can use these payloads in Postman or `curl` to interact with the API.
+All endpoints require authentication. Use the Feed API under `/api/v1/feeds`.
 
-### 1. Create a Todo
-
-*   **URL**: `http://localhost:8080/todos`
-*   **Method**: `POST`
-*   **Body** (JSON):
-
-    ```json
-    {
-      "title": "Buy groceries"
-    }
-    ```
-
-### 2. List Todos
-
-*   **URL**: `http://localhost:8080/todos`
-*   **Method**: `GET`
-
-### 3. Update a Todo
-
-Replace `:id` with the ID from the creation response or list.
-
-*   **URL**: `http://localhost:8080/todos/:id`
-*   **Method**: `PUT`
-*   **Body** (JSON):
-
-    ```json
-    {
-      "title": "Buy groceries and cook dinner",
-      "completed": true
-    }
-    ```
-
-### 4. Delete a Todo
-
-*   **URL**: `http://localhost:8080/todos/:id`
-*   **Method**: `DELETE`
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/v1/feeds` | List all feeds for the authenticated user |
+| `GET` | `/api/v1/feeds/{id}` | Get a single feed |
+| `POST` | `/api/v1/feeds` | Create a new feed |
+| `PUT` | `/api/v1/feeds/{id}` | Update a feed |
+| `DELETE` | `/api/v1/feeds/{id}` | Delete a feed |
+| `POST` | `/api/v1/feeds/import` | Bulk import from localStorage (idempotent upsert) |

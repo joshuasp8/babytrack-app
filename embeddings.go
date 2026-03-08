@@ -5,5 +5,5 @@ import "embed"
 //go:embed migrations
 var EmbeddedMigrations embed.FS
 
-//go:embed frontend
+//go:embed frontend/src
 var EmbeddedFrontend embed.FS

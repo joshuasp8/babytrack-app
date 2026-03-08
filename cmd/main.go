@@ -93,9 +93,8 @@ func main() {
 	// and take precedence over the root file server.
 	rootRouter.Handle("/api/", feedRouter)
 
-	// Serve frontend static files
-	// Use embedded filesystem
-	frontendFS, err := fs.Sub(embeddings.EmbeddedFrontend, "frontend")
+	// Serve frontend static files using embedded filesystem
+	frontendFS, err := fs.Sub(embeddings.EmbeddedFrontend, "frontend/src")
 	if err != nil {
 		log.Fatal("Failed to create frontend file system: ", err)
 	}

@@ -4,8 +4,7 @@ This file provides context for AI agents working on this codebase.
 
 ## Project Summary
 
-BabyTrack is a Go REST API for tracking baby feeding events.
-State is persisted in **Postgres**. The application runs migrations on startup.
+BabyTrack is a full-stack infant stats tracker. The **Go backend** serves a REST API (Feed CRUD, health, version) with **Postgres** persistence and runs migrations on startup. The **Lit-based frontend** is embedded in the Go binary via `//go:embed` (`embeddings.go`) and served at `/`.
 
 ## Key Locations
 
@@ -49,9 +48,23 @@ Public routes (`/health`, `/version`) bypass the auth middleware.
 
 ## Frontend Architecture
 
--   **Tech Stack**: Lit Web Components (`LitElement`), Vanilla ES6 Modules for models (JSDoc typed), CSS Variables. No build step (uses import maps).
--   **Serving**: Frontend assets are embedded in the Go binary using `//go:embed` and served via `http.FileServer` mounted at `/`.
--   **API Integration**: `frontend/services/api.js` handles `fetch` calls to `/api/v1/` and maps responses to native ES6 classes.
+-   **Tech Stack**: Lit Web Components (`LitElement`), Vanilla ES6 Modules (JSDoc typed), CSS Variables. No build step — uses import maps and ships as standard ES6+.
+-   **Serving**: Frontend assets are embedded in the Go binary via `//go:embed` (`embeddings.go`) and served by `http.FileServer` at `/`.
+-   **API Integration**: `frontend/src/services/feed-api-service.js` handles `fetch` calls to `/api/v1/` and maps responses to ES6 model classes.
+-   **Styling**: Dark-mode-first design using `frontend/src/styles/main.css`. Components use Shadow DOM with shared styles from `src/styles/shared-styles.js`.
+-   **Design Philosophy**: Premium dark-mode aesthetic. Use `var(--primary-color)` for actions, rounded corners (`--radius-lg`), progressive disclosure (hide complex inputs behind toggles), and segmented controls for small option sets.
+-   **Component Patterns**:
+    -   Root `bt-app` acts as the router/orchestrator with a tabbed interface (Feed / Sleep).
+    -   Parent "commands" via properties, children "notify" via custom events (e.g., `feed-added`, `feed-edited`).
+    -   Break complex `render()` methods into helpers (`_renderHeader()`, `_renderForm()`).
+    -   Extract SVG icons into `src/components/common/icons.js`.
+-   **Two-Mode Data Layer** (`FeedService`):
+    -   **Local mode** (logged out): reads/writes `localStorage` with simulated latency.
+    -   **Server mode** (logged in): delegates to `FeedApiService`.
+    -   `importAndSwitchToServer()` performs a one-time localStorage → API migration on first login.
+    -   Sleep data is local-only.
+-   **Timer Architecture**: Uses a drift-proof *banked + delta* pattern (`TimerLogic`). Stores `banked` time + `lastResumeTime`; never relies on `setInterval` counters.
+-   **Standalone Mode**: Run `./frontend/start-server` (port 8000) for frontend-only development. Use `go run cmd/main.go` for the full embedded integration.
 
 ## Feed Domain (`internal/feed/`)
 
@@ -117,10 +130,18 @@ All feed data is **user-scoped**: every query and mutation is filtered by `user_
 
 ## Testing
 
+### Backend
 -   **Unit Tests**: `internal/feed/handler_test.go` covers handler logic using the `InMemoryRepository`.
--   **Run all tests**:
+-   **Run all Go tests**:
     ```bash
     go test ./...
+    ```
+
+### Frontend
+-   **Unit Tests**: Located in `frontend/tests/`. Uses the Node.js native test runner (`node --test`). Browser APIs like `localStorage` are mocked.
+-   **Run frontend tests**:
+    ```bash
+    cd frontend && npm test
     ```
 
 ## Key Patterns
