@@ -80,7 +80,7 @@ func main() {
 		middleware.RecoveryMiddleware(),
 		middleware.RequestIDMiddleware(),
 		middleware.LoggerMiddleware(),
-		middleware.NewRateLimitMiddleware(50, time.Minute), // Simple rate limit: 50 req/min per IP
+		middleware.NewRateLimitMiddleware(120, time.Minute), // Simple rate limit: 120 req/min per IP
 		middleware.CorsMiddleware(cfg.CorsAllowedOrigins),
 	)
 
