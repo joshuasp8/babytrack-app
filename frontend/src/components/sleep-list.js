@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { sharedStyles } from '../styles/shared-styles.js';
+import { formatTime, formatDate } from '../utils/date-utils.js';
 
 export class SleepList extends LitElement {
   static styles = [
@@ -84,25 +85,7 @@ export class SleepList extends LitElement {
     this.sleeps = [];
   }
 
-  _formatTime(isoString) {
-    const date = new Date(isoString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).toLowerCase();
-  }
 
-  _formatDate(isoString) {
-    const date = new Date(isoString);
-    const now = new Date();
-    const yesterday = new Date(now);
-    yesterday.setDate(now.getDate() - 1);
-
-    if (date.toDateString() === now.toDateString()) {
-      return 'Today';
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday';
-    } else {
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-    }
-  }
 
   _handleEdit(sleep) {
     this.dispatchEvent(new CustomEvent('sleep-edited', {
@@ -133,7 +116,7 @@ export class SleepList extends LitElement {
 
     // Group by date
     const grouped = this.sleeps.reduce((acc, sleep) => {
-      const dateKey = this._formatDate(sleep.startTime);
+      const dateKey = formatDate(sleep.startTime);
       if (!acc[dateKey]) acc[dateKey] = [];
       acc[dateKey].push(sleep);
       return acc;
@@ -166,7 +149,7 @@ export class SleepList extends LitElement {
         <div class="feed-main">
           <div class="feed-info">
             <div class="feed-time">
-              ${this._formatTime(sleep.startTime)}
+              ${formatTime(sleep.startTime)}
             </div>
             <div class="feed-details">
               <span class="badge">🌙</span> ${sleep.durationMinutes}m

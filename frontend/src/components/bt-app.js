@@ -168,18 +168,9 @@ export class BtApp extends LitElement {
       this._loading = false;
     }
     if (currUser) {
-      // Attempt to migrate local data to server and switch to server mode.
-      this._loading = true;
-      const result = await FeedService.importAndSwitchToServer();
-      this._loading = false;
-      if (!result.success) {
-        window.dispatchEvent(new CustomEvent('sync-error', {
-          detail: { message: result.message }
-        }));
-      } else {
-        // successfully logged in and switched to server mode
-        this._user = currUser;
-      }
+      // switch to server mode.
+      FeedService.switchToServer();
+      this._user = currUser;
     }
     // Reload feeds from whichever source is now active.
     await this._loadFeeds();
@@ -420,7 +411,6 @@ export class BtApp extends LitElement {
   }
 
   _renderFeedView() {
-    console.log('bt-app.js: rendering feed view with feeds:', this._feeds);
     return html`
       <feed-input 
           .feed="${this._editingFeed}"

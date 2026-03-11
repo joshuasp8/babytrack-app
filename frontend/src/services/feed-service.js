@@ -32,11 +32,9 @@ export const FeedService = {
      * @returns {Promise<Array<Feed>>} Sorted by startTime descending (newest first).
      */
     async getAll() {
-        console.log('feed-service.js: FeedService.getAll() called, useServer:', this._useServer);
         if (this._useServer) {
             const feeds = await FeedApiService.getAll();
             return (feeds || []).sort((a, b) => new Date(b.startTime).valueOf() - new Date(a.startTime).valueOf());
-            console.log('feed-service.js: FeedService.getAll() completed');
         }
         const feeds = (await StorageService.getAsync(STORAGE_KEY)) || [];
         return feeds.sort((a, b) => new Date(b.startTime).valueOf() - new Date(a.startTime).valueOf());
@@ -108,60 +106,11 @@ export const FeedService = {
     },
 
     /**
-     * Performs the one-time migration from local-only to server mode.
-     *
-     * Steps:
-     * 1. Fetch server feeds. If that fails, bail out (stay local).
-     * 2. If server already has data: skip import, wipe local, enable server mode.
-     * 3. If server is empty and local has data: bulk import.
-     *    - If import fails or has skips: stay local, return failure.
-     *    - On clean import: wipe local, enable server mode.
-     * 4. If both server and local are empty: nothing to import, enable server mode.
-     *
-     * @returns {Promise<{ success: boolean, message?: string }>}
+     * Wipes local feed data and switch to server mode.
      */
-    async importAndSwitchToServer() {
-        try {
-            const serverFeeds = await FeedApiService.getAll();
-
-            if (serverFeeds === null) {
-                // Cannot reach server — stay local.
-                return { success: false, message: 'Could not reach the server. Your data is saved locally and will sync on next login.' };
-            }
-
-            if (serverFeeds.length === 0) {
-                // Server is empty — check if we have local data to import.
-                const localFeeds = await this.getAll();
-
-                if (localFeeds.length > 0) {
-                    console.log(`[FeedService] Server is empty. Importing ${localFeeds.length} local feeds...`);
-                    const result = await FeedApiService.importFeeds(localFeeds);
-
-                    if (!result) {
-                        return { success: false, message: 'Import failed. Your data is saved locally and will retry on next login.' };
-                    }
-
-                    if (result.skipped > 0) {
-                        const msg = `Import incomplete: ${result.skipped} of ${localFeeds.length} feeds could not be imported. Your data is saved locally.`;
-                        console.warn(`[FeedService] ${msg}`);
-                        return { success: false, message: msg };
-                    }
-
-                    console.log(`[FeedService] Import complete: ${result.imported} imported.`);
-                }
-            } else {
-                console.log(`[FeedService] Server already has ${serverFeeds.length} feeds. Skipping import.`);
-            }
-
-            // Wipe local feed data and switch to server mode.
-            StorageService.clear(STORAGE_KEY);
-            this._useServer = true;
-            return { success: true };
-
-        } catch (e) {
-            console.error('[FeedService] importAndSwitchToServer failed:', e);
-            return { success: false, message: 'An unexpected error occurred during import. Your data is saved locally.' };
-        }
+    switchToServer() {
+        StorageService.clear(STORAGE_KEY);
+        this._useServer = true;
     },
 
     /**
