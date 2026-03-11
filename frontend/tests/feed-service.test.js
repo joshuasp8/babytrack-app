@@ -213,10 +213,10 @@ describe('FeedService — server mode', () => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// importAndSwitchToServer
+// switchToServer
 // ─────────────────────────────────────────────────────────────
 
-describe('FeedService.importAndSwitchToServer', () => {
+describe('FeedService.switchToServer', () => {
     before(() => { StorageService.latency = 0; });
 
     beforeEach(() => {
@@ -228,107 +228,13 @@ describe('FeedService.importAndSwitchToServer', () => {
 
     afterEach(resetService);
 
-    it('imports local feeds when server is empty, wipes local, switches to server mode', async () => {
+    it('wipes local, switches to server mode', async () => {
         const feed = new Feed({ durationMinutes: 10 });
         await FeedService.add(feed);
 
-        let importedFeeds = null;
-        FeedApiService.importFeeds = async (feeds) => {
-            importedFeeds = feeds;
-            return { imported: feeds.length, skipped: 0 };
-        };
+        FeedService.switchToServer();
 
-        const result = await FeedService.importAndSwitchToServer();
-
-        assert.strictEqual(result.success, true);
-        assert.ok(importedFeeds !== null, 'importFeeds should have been called');
-        assert.strictEqual(importedFeeds.length, 1);
         assert.strictEqual(FeedService.isServerMode(), true);
         assert.strictEqual(localStorageMock.getItem('babytrack_feeds'), null, 'local storage should be wiped');
-    });
-
-    it('skips import when server already has data, wipes local, switches to server mode', async () => {
-        const localFeed = new Feed({ durationMinutes: 10 });
-        await FeedService.add(localFeed);
-
-        let importCalled = false;
-        FeedApiService.getAll = async () => [{ id: 'server-1', durationMinutes: 5 }];
-        FeedApiService.importFeeds = async () => { importCalled = true; };
-
-        const result = await FeedService.importAndSwitchToServer();
-
-        assert.strictEqual(result.success, true);
-        assert.strictEqual(importCalled, false, 'import should NOT be called when server already has data');
-        assert.strictEqual(FeedService.isServerMode(), true);
-        assert.strictEqual(localStorageMock.getItem('babytrack_feeds'), null, 'local storage should be wiped');
-    });
-
-    it('switches to server mode even when both server and local are empty', async () => {
-        FeedApiService.getAll = async () => [];
-        let importCalled = false;
-        FeedApiService.importFeeds = async () => { importCalled = true; };
-
-        const result = await FeedService.importAndSwitchToServer();
-
-        assert.strictEqual(result.success, true);
-        assert.strictEqual(importCalled, false);
-        assert.strictEqual(FeedService.isServerMode(), true);
-    });
-
-    it('stays local when server is unreachable (getAll returns null)', async () => {
-        const feed = new Feed({ durationMinutes: 10 });
-        await FeedService.add(feed);
-
-        FeedApiService.getAll = async () => null;
-
-        const result = await FeedService.importAndSwitchToServer();
-
-        assert.strictEqual(result.success, false);
-        assert.ok(result.message, 'should return an error message');
-        assert.strictEqual(FeedService.isServerMode(), false);
-        assert.notStrictEqual(localStorageMock.getItem('babytrack_feeds'), null, 'local storage should NOT be wiped on failure');
-    });
-
-    it('stays local when importFeeds returns null (import error)', async () => {
-        const feed = new Feed({ durationMinutes: 10 });
-        await FeedService.add(feed);
-
-        FeedApiService.importFeeds = async () => null;
-
-        const result = await FeedService.importAndSwitchToServer();
-
-        assert.strictEqual(result.success, false);
-        assert.ok(result.message);
-        assert.strictEqual(FeedService.isServerMode(), false);
-        assert.notStrictEqual(localStorageMock.getItem('babytrack_feeds'), null, 'local storage should NOT be wiped on failure');
-    });
-
-    it('stays local when import has skipped feeds', async () => {
-        const feed1 = new Feed({ durationMinutes: 10 });
-        const feed2 = new Feed({ durationMinutes: 20 });
-        await FeedService.add(feed1);
-        await FeedService.add(feed2);
-
-        FeedApiService.importFeeds = async (feeds) => ({ imported: feeds.length - 1, skipped: 1 });
-
-        const result = await FeedService.importAndSwitchToServer();
-
-        assert.strictEqual(result.success, false);
-        assert.ok(result.message.includes('skipped') || result.message.includes('incomplete'));
-        assert.strictEqual(FeedService.isServerMode(), false);
-        assert.notStrictEqual(localStorageMock.getItem('babytrack_feeds'), null, 'local storage should NOT be wiped when skips exist');
-    });
-
-    it('stays local when an unexpected error is thrown', async () => {
-        const feed = new Feed({ durationMinutes: 10 });
-        await FeedService.add(feed);
-
-        FeedApiService.getAll = async () => { throw new Error('Unexpected!'); };
-
-        const result = await FeedService.importAndSwitchToServer();
-
-        assert.strictEqual(result.success, false);
-        assert.ok(result.message);
-        assert.strictEqual(FeedService.isServerMode(), false);
     });
 });

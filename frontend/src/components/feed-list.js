@@ -71,7 +71,6 @@ export class FeedList extends LitElement {
     constructor() {
         super();
         this.feeds = [];
-        console.log('feed-list.js: feed-list constructor completed');
     }
 
     _handleDelete(id) {
@@ -93,7 +92,6 @@ export class FeedList extends LitElement {
     }
 
     render() {
-        console.log('feed-list.js: rendering feed list', this.feeds);
         if (!this.feeds || this.feeds.length === 0) {
             return this._renderEmptyList();
         }
