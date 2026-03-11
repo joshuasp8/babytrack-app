@@ -1,8 +1,11 @@
 import { LitElement, html, css } from 'lit';
-import { formatFeedTime } from '../utils/date-utils.js';
+import { sharedStyles } from '../styles/shared-styles.js';
+import { formatTime, formatDate } from '../utils/date-utils.js';
 
 export class FeedList extends LitElement {
-    static styles = css`
+    static styles = [
+      sharedStyles,
+      css`
     :host {
       display: block;
     }
@@ -62,7 +65,16 @@ export class FeedList extends LitElement {
         background: rgba(59, 130, 246, 0.1) !important;
         color: var(--primary-color) !important;
     }
-  `;
+    .date-header {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-top: 16px;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  `];
 
     static properties = {
         feeds: { type: Array }
@@ -72,6 +84,7 @@ export class FeedList extends LitElement {
         super();
         this.feeds = [];
     }
+
 
     _handleDelete(id) {
         if (confirm('Are you sure you want to delete this feed?')) {
@@ -95,10 +108,32 @@ export class FeedList extends LitElement {
         if (!this.feeds || this.feeds.length === 0) {
             return this._renderEmptyList();
         }
-        // render list of history cards
+
+        // Group by date
+        const grouped = this.feeds.reduce((acc, feed) => {
+            const dateKey = formatDate(feed.startTime);
+            if (!acc[dateKey]) acc[dateKey] = [];
+            acc[dateKey].push(feed);
+            return acc;
+        }, {});
+
         return html`
-        <div>
-            ${this.feeds.map(feed => this._renderHistoryCard(feed))}
+        <div class="list-container">
+            ${Object.keys(grouped).map(date => {
+                const feeds = grouped[date];
+                const totalMinutes = feeds.reduce((sum, f) => sum + f.durationMinutes, 0);
+                const hours = Math.floor(totalMinutes / 60);
+                const mins = totalMinutes % 60;
+                const totalText = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+
+                return html`
+                    <div class="date-header">
+                        <span>${date}</span>
+                        <span style="font-weight: 400; color: var(--text-secondary); font-size: 0.9em;">${totalText}</span>
+                    </div>
+                    ${feeds.map(feed => this._renderHistoryCard(feed))}
+                `;
+            })}
         </div>
         `;
     }
@@ -115,7 +150,7 @@ export class FeedList extends LitElement {
         return html`
             <div class="feed-item">
                 <div class="feed-info">
-                    <div class="feed-time">${formatFeedTime(feed.startTime)}</div>
+                    <div class="feed-time">${formatTime(feed.startTime)}</div>
                     <div class="feed-details">
                         <span class="badge">${feed.type}</span>
                         <span>${feed.durationMinutes} min
