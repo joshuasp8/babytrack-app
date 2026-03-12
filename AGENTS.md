@@ -58,6 +58,7 @@ Public routes (`/health`, `/version`) bypass the auth middleware.
     -   Parent "commands" via properties, children "notify" via custom events (e.g., `feed-added`, `feed-edited`).
     -   Break complex `render()` methods into helpers (`_renderHeader()`, `_renderForm()`).
     -   Extract SVG icons into `src/components/common/icons.js`.
+    -   **Feed History**: `feed-list.js` groups feeds by day. Groups are collapsible; only the most recent day is expanded by default.
 -   **Two-Mode Data Layer** (`FeedService`):
     -   **Local mode** (logged out): reads/writes `localStorage` with simulated latency.
     -   **Server mode** (logged in): delegates to `FeedApiService`.

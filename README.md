@@ -148,6 +148,7 @@ go build -ldflags "-X babytrack/internal/version.Version=1.0.0" cmd/main.go
 - ✅ **Live Feed Timer**: Drift-proof banked+delta timer with per-side breast tracking
 - ✅ **Two-Mode Data Layer**: localStorage when logged out, backend API when logged in, with automatic one-time import on first login
 - ✅ **Premium Dark UI**: CSS variables, glassmorphism touches, and responsive design
+- ✅ **Collapsible History**: Feed history is grouped by day and collapsible, with the most recent day expanded by default
 
 ## Deployment
 
