@@ -6,7 +6,7 @@ export class TimerLogic {
     /**
      * Creates the initial state for a new feed.
      */
-    static start(type, startSide, now = new Date()) {
+    static start(type, startSide, now = new Date(), amountOz = 0) {
         return {
             startTime: now.toISOString(),
             type: type,
@@ -17,7 +17,8 @@ export class TimerLogic {
                 right: 0
             },
             currentSide: startSide || (type === 'breast' ? 'left' : null),
-            startSide: startSide || (type === 'breast' ? 'left' : null)
+            startSide: startSide || (type === 'breast' ? 'left' : null),
+            amountOz: amountOz
         };
     }
 

@@ -62,10 +62,10 @@ The frontend is built with **Lit** (a lightweight web component library) and ES6
 For API development without generating real JWTs, you can enable the **Dev Auth Middleware**:
 
 ```bash
-DEV_AUTH_ENABLED=true go run cmd/main.go
+PORT=8081 DEV_AUTH_ENABLED=true go run cmd/main.go
 ```
 
-This injects a dummy user (`dev@example.com`) into the request context, allowing you to interact with the API effortlessly.
+This injects a dummy user (`dev@example.com`) into the request context. It also spawns a mock auth endpoint so the embedded frontend will automatically log you in without credentials, allowing you to interact with the API effortlessly.
 
 ### Adding New Middleware
 

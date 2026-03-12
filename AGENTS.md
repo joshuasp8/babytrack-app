@@ -89,9 +89,11 @@ All feed data is **user-scoped**: every query and mutation is filtered by `user_
 
 1.  Create a new migration file in `migrations/` to alter the table.
 2.  Update `Feed` struct in `internal/feed/model.go`.
-3.  Update `CreateFeedRequest` / `UpdateFeedRequest` / `ImportFeedItem` in `internal/feed/model.go`.
+3.  Update `CreateFeedRequest` / `UpdateFeedRequest` / `ImportFeedItem` in `internal/feed/model.go` (ensure JSON tags map correctly, e.g., `camelCase` for JS compatibility).
 4.  Update `Repository` SQL queries in `internal/feed/repository.go`.
 5.  Update `Service` validation if needed in `internal/feed/service.go`.
+6.  Update `Feed` frontend model in `frontend/src/models/feed.js`.
+7.  Update frontend state management and components (`feed-input.js`, `active-feed.js`, `feed-list.js`) to capture and render the new field. *Note: If a field is passed from the active timer, ensure `TimerLogic` tracks it and `bt-app.js` unpacks it into the feed completion handler.*
 
 ## Common Tasks
 

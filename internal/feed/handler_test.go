@@ -315,6 +315,30 @@ func TestCreateFeedWithAmount(t *testing.T) {
 	}
 }
 
+func TestCreateFeedOmittedAmountOzDefaultsToZero(t *testing.T) {
+	r, _ := newTestRouter()
+
+	// omission of amountOz should default to 0 and pass validation
+	body := `{"startTime":"2026-02-25T08:00:00Z","durationMinutes":15,"type":"bottle"}`
+	req, _ := http.NewRequest("POST", "/api/v1/feeds", bytes.NewBufferString(body))
+	req = withAuth(req)
+
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusCreated {
+		t.Errorf("expected 201, got %d: %s", rr.Code, rr.Body.String())
+	}
+
+	var created Feed
+	if err := json.NewDecoder(rr.Body).Decode(&created); err != nil {
+		t.Fatal(err)
+	}
+	if created.AmountOz != 0 {
+		t.Errorf("unexpected amount_oz: got %f want %f", created.AmountOz, 0.0)
+	}
+}
+
 func TestCreateFeedRejectsInvalidAmount(t *testing.T) {
 	r, _ := newTestRouter()
 

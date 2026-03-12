@@ -151,7 +151,7 @@ export class FeedList extends LitElement {
                     <div class="feed-time">${formatTime(feed.startTime)}</div>
                     <div class="feed-details">
                         <span class="badge">${feed.type}</span>
-                        ${feed.type !== 'breast' && feed.amountOz > 0 ? html`<span>${feed.amountOz} oz &middot; ` : html`<span>`}
+                        ${feed.type !== 'breast' && feed.amountOz > 0 ? html`<span>${feed.amountOz} oz •</span>` : html`<span></span>`}
                         ${feed.durationMinutes} min
                         ${feed.breastSideStartedOn
                 ? feed.breastSideStartedOn === 'left' ? html`<span>(left: ${feed.durationLeftMinutes} right: ${feed.durationRightMinutes})</span>` 
