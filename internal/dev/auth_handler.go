@@ -22,10 +22,10 @@ func (h *DevAuthHandler) Router(mx ...router.Middleware) http.Handler {
 	return r
 }
 
-/* getDevProfileResponse returns a mock profile for development. User ID is a random UUID. */
+/* getDevProfileResponse returns a mock profile for development. Uses same details as dev_auth middleware. */
 func (h *DevAuthHandler) getDevProfileResponse(w http.ResponseWriter, r *http.Request) {
 	httputils.WriteJsonResponseOk(w, struct {
 		UserId string `json:"userId"`
 		Email string `json:"email"`
-	}{UserId: "b7c15da8-4fc3-4792-97ce-df7ffe978375", Email: "dev@email.dev"})
+	}{UserId: "dev-user-id", Email: "dev@example.com"})
 }
