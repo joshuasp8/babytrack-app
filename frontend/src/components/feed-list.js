@@ -4,8 +4,8 @@ import { formatTime, formatDate } from '../utils/date-utils.js';
 
 export class FeedList extends LitElement {
     static styles = [
-      sharedStyles,
-      css`
+        sharedStyles,
+        css`
     :host {
       display: block;
     }
@@ -44,12 +44,17 @@ export class FeedList extends LitElement {
         font-weight: 500;
         text-transform: uppercase;
     }
+    .action-btns {
+        display: flex;
+        align-self: flex-end;
+    }
     .action-btn {
         background: transparent;
         border: none;
         color: var(--text-secondary);
         cursor: pointer;
-        padding: 8px;
+        padding-left: 8px;
+        padding-right: 8px;
         border-radius: 50%;
         transition: background 0.2s, color 0.2s;
     }
@@ -64,6 +69,16 @@ export class FeedList extends LitElement {
     .edit-btn:hover {
         background: rgba(59, 130, 246, 0.1) !important;
         color: var(--primary-color) !important;
+    }
+    .breast-breakdown {
+        display: flex;
+        gap: 8px;
+    }
+    @media (max-width: 400px) {
+        .breast-breakdown {
+            flex-direction: column;
+            gap: 2px;
+        }
     }
     .date-header {
       font-weight: 600;
@@ -120,18 +135,18 @@ export class FeedList extends LitElement {
         return html`
         <div class="list-container">
             ${Object.keys(grouped).map(date => {
-                const feeds = grouped[date];
-                const feedCount = feeds.length;
-                const totalText = feedCount === 1 ? '1 feed' : `${feedCount} feeds`;
+            const feeds = grouped[date];
+            const feedCount = feeds.length;
+            const totalText = feedCount === 1 ? '1 feed' : `${feedCount} feeds`;
 
-                return html`
+            return html`
                     <div class="date-header">
                         <span>${date}</span>
                         <span style="font-weight: 400; color: var(--text-secondary); font-size: 0.9em;">${totalText}</span>
                     </div>
                     ${feeds.map(feed => this._renderHistoryCard(feed))}
                 `;
-            })}
+        })}
         </div>
         `;
     }
@@ -151,11 +166,21 @@ export class FeedList extends LitElement {
                     <div class="feed-time">${formatTime(feed.startTime)}</div>
                     <div class="feed-details">
                         <span class="badge">${feed.type}</span>
-                        ${feed.type !== 'breast' && feed.amountOz > 0 ? html`<span>${feed.amountOz} oz •</span>` : html`<span></span>`}
-                        ${feed.durationMinutes} min
+                        ${feed.type !== 'breast' && feed.amountOz > 0 ? html`<span>${feed.amountOz} oz •</span>` : ''}
+                        <span>${feed.durationMinutes} min</span>
+                        ${feed.type === 'breast' && feed.breastSideStartedOn ? html`<span>•</span>` : ''}
                         ${feed.breastSideStartedOn
-                ? feed.breastSideStartedOn === 'left' ? html`<span>(left: ${feed.durationLeftMinutes} right: ${feed.durationRightMinutes})</span>` 
-                : html`<span>(right: ${feed.durationRightMinutes} left: ${feed.durationLeftMinutes})</span>`
+                ? html`
+                    <div class="breast-breakdown">
+                        ${feed.breastSideStartedOn === 'left' ? html`
+                            <span>left: ${feed.durationLeftMinutes}</span>
+                            <span>right: ${feed.durationRightMinutes}</span>
+                        ` : html`
+                            <span>right: ${feed.durationRightMinutes}</span>
+                            <span>left: ${feed.durationLeftMinutes}</span>
+                        `}
+                    </div>
+                `
                 : ''
             }
                     </div>
