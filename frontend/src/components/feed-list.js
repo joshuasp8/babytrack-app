@@ -121,10 +121,8 @@ export class FeedList extends LitElement {
         <div class="list-container">
             ${Object.keys(grouped).map(date => {
                 const feeds = grouped[date];
-                const totalMinutes = feeds.reduce((sum, f) => sum + f.durationMinutes, 0);
-                const hours = Math.floor(totalMinutes / 60);
-                const mins = totalMinutes % 60;
-                const totalText = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+                const feedCount = feeds.length;
+                const totalText = feedCount === 1 ? '1 feed' : `${feedCount} feeds`;
 
                 return html`
                     <div class="date-header">
@@ -153,7 +151,8 @@ export class FeedList extends LitElement {
                     <div class="feed-time">${formatTime(feed.startTime)}</div>
                     <div class="feed-details">
                         <span class="badge">${feed.type}</span>
-                        <span>${feed.durationMinutes} min
+                        ${feed.type !== 'breast' && feed.amountOz > 0 ? html`<span>${feed.amountOz} oz •</span>` : html`<span></span>`}
+                        ${feed.durationMinutes} min
                         ${feed.breastSideStartedOn
                 ? feed.breastSideStartedOn === 'left' ? html`<span>(left: ${feed.durationLeftMinutes} right: ${feed.durationRightMinutes})</span>` 
                 : html`<span>(right: ${feed.durationRightMinutes} left: ${feed.durationLeftMinutes})</span>`

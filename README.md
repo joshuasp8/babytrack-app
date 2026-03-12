@@ -143,7 +143,7 @@ go build -ldflags "-X babytrack/internal/version.Version=1.0.0" cmd/main.go
 
 ### Frontend
 - ✅ **Lit Web Components** with no build step (ES Modules + import maps)
-- ✅ **Feed Tracking**: Breast, bottle, and formula feeds with smart inputs and quick durations
+- ✅ **Feed Tracking**: Breast, bottle, and formula feeds with smart inputs, amount tracking (oz), and quick durations
 - ✅ **Sleep Tracking**: Live timer, daily totals, and quick log presets
 - ✅ **Live Feed Timer**: Drift-proof banked+delta timer with per-side breast tracking
 - ✅ **Two-Mode Data Layer**: localStorage when logged out, backend API when logged in, with automatic one-time import on first login

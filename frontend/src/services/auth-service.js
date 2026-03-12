@@ -5,6 +5,7 @@
 
 /** Base URL for the auth API. Change to 'http://localhost:8080' for local dev. */
 const AUTH_BASE_URL = 'https://auth.api.joshuaspeight.com/api/v1/auth';
+// const AUTH_BASE_URL = '/api/v1/auth'; // used in dev mode
 // const AUTH_BASE_URL = 'http://localhost:8080/api/v1/auth';
 
 /** Redirect URL sent with login requests. The auth server redirects here after email verification. */

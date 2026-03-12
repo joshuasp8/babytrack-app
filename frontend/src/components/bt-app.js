@@ -229,8 +229,8 @@ export class BtApp extends LitElement {
   }
 
   _handleStartActiveFeed(e) {
-    const { type, startSide } = e.detail;
-    this._activeFeed = TimerLogic.start(type, startSide, new Date());
+    const { type, startSide, amountOz } = e.detail;
+    this._activeFeed = TimerLogic.start(type, startSide, new Date(), amountOz);
     this._persistActiveFeed();
   }
 
@@ -246,6 +246,7 @@ export class BtApp extends LitElement {
       durationMinutes: feedData.durationMinutes,
       durationLeftMinutes: feedData.durationLeftMinutes,
       durationRightMinutes: feedData.durationRightMinutes,
+      amountOz: feedData.amountOz || 0,
       type: feedData.type,
       breastSideStartedOn: feedData.breastSideStartedOn,
       notes: ''

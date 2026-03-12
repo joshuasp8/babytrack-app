@@ -3,6 +3,7 @@ package main
 import (
 	embeddings "babytrack"
 	"babytrack/internal/config"
+	"babytrack/internal/dev"
 	"babytrack/internal/feed"
 	"babytrack/internal/health"
 	"babytrack/internal/version"
@@ -87,6 +88,13 @@ func main() {
 	// Public routes (no auth required)
 	rootRouter.Get("/api/v1/health", health.NewHealthHandler(db))
 	rootRouter.Get("/api/v1/version", version.NewVersionHandler())
+
+	// Create dev auth router - only enabled in dev mode
+	if cfg.DevAuthEnabled {
+		devAuthHandler := dev.NewDevAuthHandler()
+		devAuthRouter := devAuthHandler.Router()
+		rootRouter.Handle("/api/v1/auth/", devAuthRouter)
+	}
 
 	// Mount authenticated feed routes under /api/ precedence
 	// Note: feedRouter routes are absolute (/api/v1/...), so mounting at /api/ ensures they are matched

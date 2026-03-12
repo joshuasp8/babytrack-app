@@ -13,11 +13,13 @@ export class FeedInput extends LitElement {
     _startTime: { state: true },
     _type: { type: String },
     _breastSideStartedOn: { type: String },
+    _amountOz: { state: true },
     _duration: { state: true },
     _durationLeft: { state: true },
     _durationRight: { state: true },
     _notes: { state: true },
     _showDurationInput: { state: true },
+    _showAmountInput: { state: true },
     _showDurationLeftInput: { state: true },
     _showDurationRightInput: { state: true },
     _showNotes: { state: true }
@@ -58,6 +60,11 @@ export class FeedInput extends LitElement {
      */
     this._breastSideStartedOn = 'left';
     /**
+     * Amount of ounces consumed during the feed.
+     * @type {number}
+     */
+    this._amountOz = 0;
+    /**
      * Whether the feed input form is expanded. When false, the form is collapsed.
      * @type {boolean}
      */
@@ -93,6 +100,11 @@ export class FeedInput extends LitElement {
      */
     this._showDurationInput = false;
     /**
+     * Whether the amount input is visible.
+     * @type {boolean}
+     */
+    this._showAmountInput = false;
+    /**
      * Whether the duration left input is visible.
      * @type {boolean}
      */
@@ -125,6 +137,9 @@ export class FeedInput extends LitElement {
 
     this._duration = feed.durationMinutes;
     this._showDurationInput = ![10, 15, 20, 30, 45, 60].includes(feed.durationMinutes);
+
+    this._amountOz = feed.amountOz;
+    this._showAmountInput = ![2, 3, 4, 5, 6, 8].includes(feed.amountOz);
 
     this._durationLeft = feed.durationLeftMinutes;
     this._showDurationLeftInput = ![0, 5, 10, 15, 20, 30].includes(feed.durationLeftMinutes);
@@ -161,6 +176,7 @@ export class FeedInput extends LitElement {
       durationMinutes: durationMinutes,
       durationLeftMinutes: durationLeftMinutes,
       durationRightMinutes: durationRightMinutes,
+      amountOz: this._type !== 'breast' ? this._amountOz : 0,
       type: this._type,
       breastSideStartedOn: this._type === 'breast' ? this._breastSideStartedOn : null,
       notes: this._notes
@@ -205,6 +221,7 @@ export class FeedInput extends LitElement {
         <form @submit="${(e) => this._handleSubmit(e)}">
           ${this._renderTimeInput()}
           ${this._renderTypeSelector()}
+          ${this._type !== 'breast' ? this._renderAmountInput() : ''}
           ${this._type === 'breast' ? this._renderBreastDurationInput() : this._renderDurationInput()}
           ${this._renderNotesSection()}
           ${this._renderFormSubmitSection()}
@@ -227,6 +244,7 @@ export class FeedInput extends LitElement {
 
       <form @submit="${(e) => this._handleStartTiming(e)}">
          ${this._renderTypeSelector()}
+         ${this._type !== 'breast' ? this._renderAmountInput('Target Amount', true) : ''}
          
          <div class="form-actions" style="margin-top: 24px;">
             <button type="submit" class="btn btn-cta" style="width: 100%; font-size: 1.2rem; min-height: 48px;">
@@ -243,7 +261,8 @@ export class FeedInput extends LitElement {
     this.dispatchEvent(new CustomEvent('start-active-feed', {
       detail: {
         type: this._type,
-        startSide: this._type === 'breast' ? this._breastSideStartedOn : null
+        startSide: this._type === 'breast' ? this._breastSideStartedOn : null,
+        amountOz: this._type !== 'breast' ? this._amountOz : 0
       },
       bubbles: true,
       composed: true
@@ -353,6 +372,48 @@ export class FeedInput extends LitElement {
         </label>
       </div>
     </div>`;
+  }
+
+  // Amount Input (for bottle and formula)
+  _renderAmountInput(label = 'Amount', isModal = false) {
+    // In modal we don't need custom input toggle logic usually, but let's reuse it consistently.
+    return html`
+    <div class="input-group">
+      <label class="label" for="amountOz">${label}</label>
+              
+      <div class="duration-row">
+        <!-- Quick Amount Buttons -->
+        ${!this._showAmountInput ? html`
+          <div class="quick-buttons">
+            ${[2, 3, 4, 5, 6, 8].map(oz => html`
+              <button type="button" 
+                class="btn-chip ${this._amountOz == oz ? 'active' : ''}" 
+                @click="${() => { this._amountOz = oz; }}">
+                ${oz}oz
+              </button>
+            `)}
+            <button type="button" 
+              class="btn-chip ${this._showAmountInput ? 'active' : ''}" 
+              @click="${() => this._showAmountInput = true}">
+              Custom
+            </button>
+          </div>
+        ` : ''}
+
+        <!-- Input Field (Secondary) -->
+        ${this._showAmountInput ? html`
+          <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+            <input class="input input-small" type="number" id="amountOz" step="0.5" 
+              .value="${this._amountOz}" 
+              @input="${(e) => this._amountOz = parseFloat(e.target.value)}"
+              min="0" max="20" required>
+            <span class="label" style="font-weight: 400; font-size: 0.9em;">oz</span>
+            <button type="button" class="btn-text cancel-btn" style="font-size: 0.8rem; margin-left: auto;" @click="${() => this._showAmountInput = false}">Cancel</button>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+    `;
   }
 
   // Standard Duration Input (for bottle and formula)

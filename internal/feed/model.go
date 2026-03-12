@@ -9,15 +9,17 @@ import (
 // Feed represents a single feeding event.
 type Feed struct {
 	Id                   uuid.UUID  `json:"id"`
-	UserID               string     `json:"user_id"`
+	UserID               string     `json:"userId"`
 	StartTime            time.Time  `json:"startTime"`
 	DurationMinutes      int        `json:"durationMinutes"`
 	DurationLeftMinutes  int        `json:"durationLeftMinutes"`
 	DurationRightMinutes int        `json:"durationRightMinutes"`
+	AmountOz             float64    `json:"amountOz"`
+
 	Type                 string     `json:"type"`
 	BreastSideStartedOn  *string    `json:"breastSideStartedOn"`
 	Notes                string     `json:"notes"`
-	CreatedAt            time.Time  `json:"created_at"`
+	CreatedAt            time.Time  `json:"createdAt"`
 }
 
 // CreateFeedRequest is the payload for creating a new feed.
@@ -26,6 +28,8 @@ type CreateFeedRequest struct {
 	DurationMinutes      int       `json:"durationMinutes"`
 	DurationLeftMinutes  int       `json:"durationLeftMinutes"`
 	DurationRightMinutes int       `json:"durationRightMinutes"`
+	AmountOz             float64   `json:"amountOz"`
+
 	Type                 string    `json:"type"`
 	BreastSideStartedOn  *string   `json:"breastSideStartedOn"`
 	Notes                string    `json:"notes"`
@@ -37,6 +41,8 @@ type UpdateFeedRequest struct {
 	DurationMinutes      int       `json:"durationMinutes"`
 	DurationLeftMinutes  int       `json:"durationLeftMinutes"`
 	DurationRightMinutes int       `json:"durationRightMinutes"`
+	AmountOz             float64   `json:"amountOz"`
+
 	Type                 string    `json:"type"`
 	BreastSideStartedOn  *string   `json:"breastSideStartedOn"`
 	Notes                string    `json:"notes"`
@@ -58,6 +64,8 @@ type ImportFeedItem struct {
 	DurationMinutes      int       `json:"durationMinutes"`
 	DurationLeftMinutes  int       `json:"durationLeftMinutes"`
 	DurationRightMinutes int       `json:"durationRightMinutes"`
+	AmountOz             float64   `json:"amountOz"`
+
 	Type                 string    `json:"type"`
 	BreastSideStartedOn  *string   `json:"breastSideStartedOn"`
 	Notes                string    `json:"notes"`

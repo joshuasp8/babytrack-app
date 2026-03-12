@@ -8,6 +8,8 @@
  * the caller so the UI can react appropriately.
  */
 
+import { Feed } from '../models/feed.js';
+
 /** Base URL for the feed API. Change to the prod URL when deploying. */
 const FEED_API_BASE_URL = ''; // served from same origin
 // const FEED_API_BASE_URL = 'https://babytrack.app.joshuaspeight.com';
@@ -61,7 +63,7 @@ export const FeedApiService = {
 
     /**
      * Retrieves all feeds for the authenticated user from the server.
-     * @returns {Promise<Array<Object>|null>} Array of feed objects, or null on error.
+     * @returns {Promise<Array<Feed>|null>} Array of feed objects, or null on error.
      */
     async getAll() {
         try {

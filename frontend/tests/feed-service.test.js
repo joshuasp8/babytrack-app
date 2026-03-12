@@ -41,13 +41,14 @@ describe('FeedService — local mode (default)', () => {
     });
 
     it('should add a feed to localStorage', async () => {
-        const feed = new Feed({ durationMinutes: 15 });
+        const feed = new Feed({ durationMinutes: 15, amountOz: 4.5 });
         await FeedService.add(feed);
 
         const feeds = await FeedService.getAll();
         assert.strictEqual(feeds.length, 1);
         assert.strictEqual(feeds[0].id, feed.id);
         assert.strictEqual(feeds[0].durationMinutes, 15);
+        assert.strictEqual(feeds[0].amountOz, 4.5);
     });
 
     it('should sort feeds by date descending', async () => {
@@ -172,12 +173,13 @@ describe('FeedService — server mode', () => {
     });
 
     it('add() uses FeedApiService.create() and server generates id', async () => {
-        const feed = new Feed({ durationMinutes: 20 });
+        const feed = new Feed({ durationMinutes: 20, amountOz: 5.5 });
         const result = await FeedService.add(feed);
 
         assert.ok(result.id, 'returned feed should have an id');
         assert.strictEqual(serverStore.length, 1);
         assert.strictEqual(serverStore[0].durationMinutes, 20);
+        assert.strictEqual(serverStore[0].amountOz, 5.5);
         // Server should have assigned the id (may differ from client's original)
         assert.ok(serverStore[0].id);
     });
