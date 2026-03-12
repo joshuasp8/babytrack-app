@@ -14,6 +14,8 @@ type Feed struct {
 	DurationMinutes      int        `json:"durationMinutes"`
 	DurationLeftMinutes  int        `json:"durationLeftMinutes"`
 	DurationRightMinutes int        `json:"durationRightMinutes"`
+	AmountOz             float64    `json:"amountOz"`
+
 	Type                 string     `json:"type"`
 	BreastSideStartedOn  *string    `json:"breastSideStartedOn"`
 	Notes                string     `json:"notes"`
@@ -26,6 +28,8 @@ type CreateFeedRequest struct {
 	DurationMinutes      int       `json:"durationMinutes"`
 	DurationLeftMinutes  int       `json:"durationLeftMinutes"`
 	DurationRightMinutes int       `json:"durationRightMinutes"`
+	AmountOz             float64   `json:"amount_oz"`
+
 	Type                 string    `json:"type"`
 	BreastSideStartedOn  *string   `json:"breastSideStartedOn"`
 	Notes                string    `json:"notes"`
@@ -37,6 +41,8 @@ type UpdateFeedRequest struct {
 	DurationMinutes      int       `json:"durationMinutes"`
 	DurationLeftMinutes  int       `json:"durationLeftMinutes"`
 	DurationRightMinutes int       `json:"durationRightMinutes"`
+	AmountOz             float64   `json:"amount_oz"`
+
 	Type                 string    `json:"type"`
 	BreastSideStartedOn  *string   `json:"breastSideStartedOn"`
 	Notes                string    `json:"notes"`
@@ -58,6 +64,8 @@ type ImportFeedItem struct {
 	DurationMinutes      int       `json:"durationMinutes"`
 	DurationLeftMinutes  int       `json:"durationLeftMinutes"`
 	DurationRightMinutes int       `json:"durationRightMinutes"`
+	AmountOz             float64   `json:"amount_oz"`
+
 	Type                 string    `json:"type"`
 	BreastSideStartedOn  *string   `json:"breastSideStartedOn"`
 	Notes                string    `json:"notes"`

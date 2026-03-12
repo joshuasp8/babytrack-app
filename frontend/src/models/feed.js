@@ -7,6 +7,7 @@
  * @param {number} durationRightMinutes - The duration of the right side of the feed in minutes.
  * @param {'breast'|'bottle'|'formula'} type - The type of feed.
  * @param {'left'|'right'|null} breastSideStartedOn - The side of the breast to feed from.
+ * @param {number} amountOz - The amount of ounces consumed during the feed.
  * @param {string} notes - Any notes about the feed.
  */
 export class Feed {
@@ -16,6 +17,7 @@ export class Feed {
     durationMinutes = 0,
     durationLeftMinutes = 0,
     durationRightMinutes = 0,
+    amountOz = 0,
     type = 'breast',
     breastSideStartedOn = null,
     notes = ''
@@ -28,6 +30,7 @@ export class Feed {
     this.durationMinutes = durationMinutes;
     this.durationLeftMinutes = durationLeftMinutes;
     this.durationRightMinutes = durationRightMinutes;
+    this.amountOz = amountOz;
     this.type = type;
     this.breastSideStartedOn = breastSideStartedOn;
     this.notes = notes;

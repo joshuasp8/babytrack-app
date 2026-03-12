@@ -51,6 +51,7 @@ func testFeed(userID string) *Feed {
 		StartTime:           time.Now().UTC(),
 		DurationMinutes:     15,
 		DurationLeftMinutes: 15,
+		AmountOz:            0,
 		Type:                "breast",
 		BreastSideStartedOn: &side,
 		Notes:               "test feed",
@@ -63,7 +64,7 @@ func testFeed(userID string) *Feed {
 func TestCreateFeed(t *testing.T) {
 	r, _ := newTestRouter()
 
-	body := `{"startTime":"2026-02-25T08:00:00Z","durationMinutes":15,"durationLeftMinutes":15,"type":"breast","breastSideStartedOn":"left","notes":"morning"}`
+	body := `{"startTime":"2026-02-25T08:00:00Z","durationMinutes":15,"durationLeftMinutes":15,"amountOz":0,"type":"breast","breastSideStartedOn":"left","notes":"morning"}`
 	req, _ := http.NewRequest("POST", "/api/v1/feeds", bytes.NewBufferString(body))
 	req = withAuth(req)
 
@@ -161,7 +162,7 @@ func TestUpdateFeed(t *testing.T) {
 	f := testFeed(testUser.Subject)
 	repo.Save(f)
 
-	body := `{"startTime":"2026-02-25T09:00:00Z","durationMinutes":20,"type":"bottle","notes":"updated"}`
+	body := `{"startTime":"2026-02-25T09:00:00Z","durationMinutes":20,"amountOz":4.5,"type":"bottle","notes":"updated"}`
 	req, _ := http.NewRequest("PUT", fmt.Sprintf("/api/v1/feeds/%s", f.Id), bytes.NewBufferString(body))
 	req = withAuth(req)
 
@@ -178,6 +179,9 @@ func TestUpdateFeed(t *testing.T) {
 	}
 	if updated.DurationMinutes != 20 {
 		t.Errorf("duration not updated: got %d want %d", updated.DurationMinutes, 20)
+	}
+	if updated.AmountOz != 4.5 {
+		t.Errorf("amount not updated: got %f want %f", updated.AmountOz, 4.5)
 	}
 }
 
@@ -210,7 +214,7 @@ func TestImportFeeds(t *testing.T) {
 	body := fmt.Sprintf(`{
 		"feeds": [
 			{"id":"%s","startTime":"2026-02-24T07:00:00Z","durationMinutes":10,"type":"breast","breastSideStartedOn":"right","notes":""},
-			{"id":"%s","startTime":"2026-02-24T10:00:00Z","durationMinutes":12,"type":"formula","notes":""}
+			{"id":"%s","startTime":"2026-02-24T10:00:00Z","durationMinutes":12,"amountOz":4.5,"type":"formula","notes":""}
 		]
 	}`, id1, id2)
 
@@ -285,6 +289,53 @@ func TestCreateFeedRejectsInvalidType(t *testing.T) {
 
 	if rr.Code != http.StatusBadRequest {
 		t.Errorf("expected 400 for invalid type, got %d", rr.Code)
+	}
+}
+
+func TestCreateFeedWithAmount(t *testing.T) {
+	r, _ := newTestRouter()
+
+	body := `{"startTime":"2026-02-25T08:00:00Z","durationMinutes":15,"amountOz":4.5,"type":"bottle"}`
+	req, _ := http.NewRequest("POST", "/api/v1/feeds", bytes.NewBufferString(body))
+	req = withAuth(req)
+
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusCreated {
+		t.Errorf("expected 201, got %d: %s", rr.Code, rr.Body.String())
+	}
+
+	var created Feed
+	if err := json.NewDecoder(rr.Body).Decode(&created); err != nil {
+		t.Fatal(err)
+	}
+	if created.AmountOz != 4.5 {
+		t.Errorf("unexpected amount_oz: got %f want %f", created.AmountOz, 4.5)
+	}
+}
+
+func TestCreateFeedRejectsInvalidAmount(t *testing.T) {
+	r, _ := newTestRouter()
+
+	tests := []struct {
+		amount float64
+	}{
+		{-1.0},
+		{25.5},
+	}
+
+	for _, tt := range tests {
+		body := fmt.Sprintf(`{"startTime":"2026-02-25T08:00:00Z","durationMinutes":15,"amountOz":%f,"type":"bottle"}`, tt.amount)
+		req, _ := http.NewRequest("POST", "/api/v1/feeds", bytes.NewBufferString(body))
+		req = withAuth(req)
+
+		rr := httptest.NewRecorder()
+		r.ServeHTTP(rr, req)
+
+		if rr.Code != http.StatusBadRequest {
+			t.Errorf("expected 400 for invalid amount %f, got %d", tt.amount, rr.Code)
+		}
 	}
 }
 

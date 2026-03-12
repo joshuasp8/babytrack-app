@@ -171,6 +171,7 @@ export class ActiveFeed extends LitElement {
         durationMinutes: Math.round(finalDisplay.total / 60),
         durationLeftMinutes: Math.round(finalDisplay.left / 60),
         durationRightMinutes: Math.round(finalDisplay.right / 60),
+        amountOz: this.timerState.amountOz || 0,
         type: this.timerState.type,
         // Use the explicit startSide we now track, falling back to currentSide for legacy/safety
         breastSideStartedOn: this.timerState.startSide || this.timerState.currentSide

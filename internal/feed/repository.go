@@ -96,7 +96,7 @@ func NewPostgresRepository(db *sql.DB) *PostgresRepository {
 func (r *PostgresRepository) FindAllByUser(userID string) ([]*Feed, error) {
 	query := `
 		SELECT id, user_id, start_time, duration_minutes, duration_left_minutes,
-		       duration_right_minutes, type, breast_side_started_on, notes, created_at
+		       duration_right_minutes, amount_oz, type, breast_side_started_on, notes, created_at
 		FROM feeds
 		WHERE user_id = $1
 		ORDER BY start_time DESC
@@ -113,7 +113,7 @@ func (r *PostgresRepository) FindAllByUser(userID string) ([]*Feed, error) {
 		if err := rows.Scan(
 			&f.Id, &f.UserID, &f.StartTime,
 			&f.DurationMinutes, &f.DurationLeftMinutes, &f.DurationRightMinutes,
-			&f.Type, &f.BreastSideStartedOn, &f.Notes, &f.CreatedAt,
+			&f.AmountOz, &f.Type, &f.BreastSideStartedOn, &f.Notes, &f.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -128,7 +128,7 @@ func (r *PostgresRepository) FindAllByUser(userID string) ([]*Feed, error) {
 func (r *PostgresRepository) FindByID(userID string, id uuid.UUID) (*Feed, error) {
 	query := `
 		SELECT id, user_id, start_time, duration_minutes, duration_left_minutes,
-		       duration_right_minutes, type, breast_side_started_on, notes, created_at
+		       duration_right_minutes, amount_oz, type, breast_side_started_on, notes, created_at
 		FROM feeds
 		WHERE id = $1 AND user_id = $2
 	`
@@ -136,7 +136,7 @@ func (r *PostgresRepository) FindByID(userID string, id uuid.UUID) (*Feed, error
 	err := r.db.QueryRow(query, id, userID).Scan(
 		&f.Id, &f.UserID, &f.StartTime,
 		&f.DurationMinutes, &f.DurationLeftMinutes, &f.DurationRightMinutes,
-		&f.Type, &f.BreastSideStartedOn, &f.Notes, &f.CreatedAt,
+		&f.AmountOz, &f.Type, &f.BreastSideStartedOn, &f.Notes, &f.CreatedAt,
 	)
 	if err == sql.ErrNoRows {
 		return nil, ErrFeedNotFound
@@ -150,13 +150,14 @@ func (r *PostgresRepository) FindByID(userID string, id uuid.UUID) (*Feed, error
 func (r *PostgresRepository) Save(feed *Feed) error {
 	query := `
 		INSERT INTO feeds (id, user_id, start_time, duration_minutes, duration_left_minutes,
-		                   duration_right_minutes, type, breast_side_started_on, notes, created_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		                   duration_right_minutes, amount_oz, type, breast_side_started_on, notes, created_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 		ON CONFLICT (id) DO UPDATE SET
 			start_time             = EXCLUDED.start_time,
 			duration_minutes       = EXCLUDED.duration_minutes,
 			duration_left_minutes  = EXCLUDED.duration_left_minutes,
 			duration_right_minutes = EXCLUDED.duration_right_minutes,
+			amount_oz              = EXCLUDED.amount_oz,
 			type                   = EXCLUDED.type,
 			breast_side_started_on = EXCLUDED.breast_side_started_on,
 			notes                  = EXCLUDED.notes
@@ -164,7 +165,7 @@ func (r *PostgresRepository) Save(feed *Feed) error {
 	_, err := r.db.Exec(query,
 		feed.Id, feed.UserID, feed.StartTime,
 		feed.DurationMinutes, feed.DurationLeftMinutes, feed.DurationRightMinutes,
-		feed.Type, feed.BreastSideStartedOn, feed.Notes, feed.CreatedAt,
+		feed.AmountOz, feed.Type, feed.BreastSideStartedOn, feed.Notes, feed.CreatedAt,
 	)
 	return err
 }
@@ -178,13 +179,14 @@ func (r *PostgresRepository) SaveAll(feeds []*Feed) error {
 
 	stmt, err := tx.Prepare(`
 		INSERT INTO feeds (id, user_id, start_time, duration_minutes, duration_left_minutes,
-		                   duration_right_minutes, type, breast_side_started_on, notes, created_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		                   duration_right_minutes, amount_oz, type, breast_side_started_on, notes, created_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 		ON CONFLICT (id) DO UPDATE SET
 			start_time             = EXCLUDED.start_time,
 			duration_minutes       = EXCLUDED.duration_minutes,
 			duration_left_minutes  = EXCLUDED.duration_left_minutes,
 			duration_right_minutes = EXCLUDED.duration_right_minutes,
+			amount_oz              = EXCLUDED.amount_oz,
 			type                   = EXCLUDED.type,
 			breast_side_started_on = EXCLUDED.breast_side_started_on,
 			notes                  = EXCLUDED.notes
@@ -198,7 +200,7 @@ func (r *PostgresRepository) SaveAll(feeds []*Feed) error {
 		if _, err := stmt.Exec(
 			f.Id, f.UserID, f.StartTime,
 			f.DurationMinutes, f.DurationLeftMinutes, f.DurationRightMinutes,
-			f.Type, f.BreastSideStartedOn, f.Notes, f.CreatedAt,
+			f.AmountOz, f.Type, f.BreastSideStartedOn, f.Notes, f.CreatedAt,
 		); err != nil {
 			return err
 		}

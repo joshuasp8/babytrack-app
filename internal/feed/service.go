@@ -41,6 +41,10 @@ func (s *FeedService) Create(userID string, req *CreateFeedRequest) (*Feed, erro
 	if err := validateBreastSide(req.BreastSideStartedOn); err != nil {
 		return nil, err
 	}
+	if err := validateAmount(req.AmountOz); err != nil {
+		return nil, err
+	}
+
 
 	feed := &Feed{
 		Id:                   uuid.New(),
@@ -49,10 +53,12 @@ func (s *FeedService) Create(userID string, req *CreateFeedRequest) (*Feed, erro
 		DurationMinutes:      req.DurationMinutes,
 		DurationLeftMinutes:  req.DurationLeftMinutes,
 		DurationRightMinutes: req.DurationRightMinutes,
+		AmountOz:             req.AmountOz,
 		Type:                 req.Type,
 		BreastSideStartedOn:  req.BreastSideStartedOn,
 		Notes:                req.Notes,
 		CreatedAt:            time.Now().UTC(),
+
 	}
 
 	if err := s.repository.Save(feed); err != nil {
@@ -73,14 +79,20 @@ func (s *FeedService) Update(userID string, id uuid.UUID, req *UpdateFeedRequest
 	if err := validateBreastSide(req.BreastSideStartedOn); err != nil {
 		return nil, err
 	}
+	if err := validateAmount(req.AmountOz); err != nil {
+		return nil, err
+	}
+
 
 	feed.StartTime = req.StartTime
 	feed.DurationMinutes = req.DurationMinutes
 	feed.DurationLeftMinutes = req.DurationLeftMinutes
 	feed.DurationRightMinutes = req.DurationRightMinutes
+	feed.AmountOz = req.AmountOz
 	feed.Type = req.Type
 	feed.BreastSideStartedOn = req.BreastSideStartedOn
 	feed.Notes = req.Notes
+
 
 	if err := s.repository.Save(feed); err != nil {
 		return nil, err
@@ -134,6 +146,7 @@ func (s *FeedService) Import(userID string, items []ImportFeedItem) (int, error)
 			DurationMinutes:      item.DurationMinutes,
 			DurationLeftMinutes:  item.DurationLeftMinutes,
 			DurationRightMinutes: item.DurationRightMinutes,
+			AmountOz:             item.AmountOz,
 			Type:                 item.Type,
 			BreastSideStartedOn:  item.BreastSideStartedOn,
 			Notes:                item.Notes,
@@ -165,6 +178,13 @@ func validateBreastSide(side *string) error {
 	}
 	if !validBreastSides[*side] {
 		return ErrInvalidBreastSide
+	}
+	return nil
+}
+
+func validateAmount(amount float64) error {
+	if amount < 0 || amount > 20 {
+		return ErrInvalidAmount
 	}
 	return nil
 }
