@@ -44,12 +44,17 @@ export class SleepList extends LitElement {
           font-weight: 500;
           text-transform: uppercase;
       }
+      .action-btns {
+          display: flex;
+          align-self: flex-end;
+      }
       .action-btn {
           background: transparent;
           border: none;
           color: var(--text-secondary);
           cursor: pointer;
-          padding: 8px;
+          padding-left: 8px;
+          padding-right: 8px;
           border-radius: 50%;
           transition: background 0.2s, color 0.2s;
       }
@@ -69,20 +74,42 @@ export class SleepList extends LitElement {
         font-weight: 600;
         color: var(--text-primary);
         margin-top: 16px;
-        margin-bottom: 4px;
+        margin-bottom: 8px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        cursor: pointer;
+        padding: 8px;
+        margin-left: -8px;
+        margin-right: -8px;
+        border-radius: var(--radius-md);
+        transition: background 0.2s;
+      }
+      .date-header:hover {
+          background: var(--bg-surface-hover);
+      }
+      .date-header-left {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+      }
+      .chevron {
+          color: var(--text-secondary);
+          display: flex;
+          align-items: center;
       }
     `];
 
   static properties = {
-    sleeps: { type: Array }
+    sleeps: { type: Array },
+    expandedDates: { type: Object, state: true }
   };
 
   constructor() {
     super();
     this.sleeps = [];
+    this.expandedDates = new Set();
+    this._initializedDates = false;
   }
 
 
@@ -122,25 +149,48 @@ export class SleepList extends LitElement {
       return acc;
     }, {});
 
+    const dates = Object.keys(grouped);
+        
+    // Auto-expand the most recent date on first render
+    if (!this._initializedDates && dates.length > 0) {
+        this.expandedDates.add(dates[0]);
+        this._initializedDates = true;
+    }
+
     return html`
       <div class="list-container">
-        ${Object.keys(grouped).map(date => {
+        ${dates.map(date => {
       const sleeps = grouped[date];
       const totalMinutes = sleeps.reduce((sum, s) => sum + s.durationMinutes, 0);
       const hours = Math.floor(totalMinutes / 60);
       const mins = totalMinutes % 60;
       const totalText = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+      const isExpanded = this.expandedDates.has(date);
 
       return html`
-              <div class="date-header">
-                  <span>${date}</span>
+              <div class="date-header" @click="${() => this._toggleDate(date)}">
+                  <div class="date-header-left">
+                      <span class="chevron">
+                          ${isExpanded ? html`<chevron-down-icon></chevron-down-icon>` : html`<chevron-right-icon></chevron-right-icon>`}
+                      </span>
+                      <span>${date}</span>
+                  </div>
                   <span style="font-weight: 400; color: var(--text-secondary); font-size: 0.9em;">${totalText}</span>
               </div>
-              ${sleeps.map(sleep => this._renderSleepItem(sleep))}
+              ${isExpanded ? sleeps.map(sleep => this._renderSleepItem(sleep)) : ''}
             `;
     })}
       </div>
     `;
+  }
+
+  _toggleDate(date) {
+    if (this.expandedDates.has(date)) {
+        this.expandedDates.delete(date);
+    } else {
+        this.expandedDates.add(date);
+    }
+    this.requestUpdate();
   }
 
   _renderSleepItem(sleep) {
@@ -157,7 +207,7 @@ export class SleepList extends LitElement {
             ${sleep.notes ? html`<div class="feed-notes">${sleep.notes}</div>` : ''}
           </div>
         </div>
-         <div class="feed-actions">
+         <div class="action-btns">
            <button class="action-btn edit-btn" @click="${() => this._handleEdit(sleep)}">
              <pencil-icon />
            </button>
