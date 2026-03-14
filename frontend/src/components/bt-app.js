@@ -170,10 +170,12 @@ export class BtApp extends LitElement {
     if (currUser) {
       // switch to server mode.
       FeedService.switchToServer();
+      await SleepService.importAndSwitchToServer();
       this._user = currUser;
     }
-    // Reload feeds from whichever source is now active.
+    // Reload data from whichever source is now active.
     await this._loadFeeds();
+    await this._loadSleeps();
   }
 
   async _handleUserChanged(e) {
@@ -181,8 +183,10 @@ export class BtApp extends LitElement {
     if (!e.detail) {
       // Logged out — revert to local-only mode.
       FeedService.switchToLocal();
+      SleepService.switchToLocal();
     }
     await this._loadFeeds();
+    await this._loadSleeps();
   }
 
   // --- Feed Handlers ---
