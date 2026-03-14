@@ -59,11 +59,10 @@ Public routes (`/health`, `/version`) bypass the auth middleware.
     -   Break complex `render()` methods into helpers (`_renderHeader()`, `_renderForm()`).
     -   Extract SVG icons into `src/components/common/icons.js`.
     -   **Feed History**: `feed-list.js` groups feeds by day. Groups are collapsible; only the most recent day is expanded by default.
--   **Two-Mode Data Layer** (`FeedService`):
-    -   **Local mode** (logged out): reads/writes `localStorage` with simulated latency.
-    -   **Server mode** (logged in): delegates to `FeedApiService`.
+-   **Two-Mode Data Layer** (`FeedService`, `SleepService`):
+    -   **Local mode** (logged out): reads/writes `localStorage` (Feeds simulate latency).
+    -   **Server mode** (logged in): delegates to `FeedApiService` and `SleepApiService`.
     -   `importAndSwitchToServer()` performs a one-time localStorage → API migration on first login.
-    -   Sleep data is local-only.
 -   **Timer Architecture**: Uses a drift-proof *banked + delta* pattern (`TimerLogic`). Stores `banked` time + `lastResumeTime`; never relies on `setInterval` counters.
 -   **Standalone Mode**: Run `./frontend/start-server` (port 8000) for frontend-only development. Use `go run cmd/main.go` for the full embedded integration.
 
@@ -81,6 +80,8 @@ All feed data is **user-scoped**: every query and mutation is filtered by `user_
 | `PUT` | `/api/v1/feeds/{id}` | Update a feed |
 | `DELETE` | `/api/v1/feeds/{id}` | Delete a feed |
 | `POST` | `/api/v1/feeds/import` | Bulk import from localStorage (idempotent upsert) |
+
+*Note: The Sleep domain (`internal/sleep/`) exposes identical CRUD and import endpoints under `/api/v1/sleeps`.*
 
 ### Feed Types & Validation
 -   `type`: must be `breast`, `bottle`, or `formula` (enforced in service layer).

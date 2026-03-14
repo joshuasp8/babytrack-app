@@ -131,7 +131,7 @@ go build -ldflags "-X babytrack/internal/version.Version=1.0.0" cmd/main.go
 ## Features
 
 ### Backend
-- ✅ **REST API** for Feed management (CRUD + bulk import)
+- ✅ **REST API** for Feed and Sleep management (CRUD + bulk import)
 - ✅ **JWT Authentication** via HTTP-only cookies
 - ✅ **Request Logging** with request IDs, status codes, and duration
 - ✅ **Rate Limiting** via in-memory IP tracking to prevent abuse
@@ -183,3 +183,5 @@ All endpoints require authentication. Use the Feed API under `/api/v1/feeds`.
 | `PUT` | `/api/v1/feeds/{id}` | Update a feed |
 | `DELETE` | `/api/v1/feeds/{id}` | Delete a feed |
 | `POST` | `/api/v1/feeds/import` | Bulk import from localStorage (idempotent upsert) |
+
+*Note: Identical endpoints exist under `/api/v1/sleeps` for Sleep management.*
