@@ -120,7 +120,6 @@ export const SleepService = {
         
         // If there's nothing in local storage, we can safely exit.
         if (!localSleeps || localSleeps.length === 0) {
-            StorageService.clear(STORAGE_KEY);
             return;
         }
 
