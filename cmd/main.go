@@ -6,6 +6,7 @@ import (
 	"babytrack/internal/dev"
 	"babytrack/internal/feed"
 	"babytrack/internal/health"
+	"babytrack/internal/sleep"
 	"babytrack/internal/version"
 	"babytrack/pkg/auth"
 	"babytrack/pkg/middleware"
@@ -61,6 +62,10 @@ func main() {
 	service := feed.NewService(repository)
 	feedHandler := feed.NewHttpHandler(service)
 
+	sleepRepo := sleep.NewPostgresRepository(db)
+	sleepService := sleep.NewService(sleepRepo)
+	sleepHandler := sleep.NewHttpHandler(sleepService)
+
 	var authMiddleware func(http.Handler) http.Handler
 	if cfg.DevAuthEnabled {
 		log.Println("⚠️  Dev Auth Enabled: Bypassing real authentication")
@@ -69,9 +74,12 @@ func main() {
 		authMiddleware = middleware.AuthCookieMiddleware(jwtAuthenticator, cfg.AuthCookieName)
 	}
 
-	// Create main router with auth middleware
+	// Create main routers with auth middleware
 	feedRouter := feedHandler.Router(
 		// Middleware stack for authenticated routes
+		authMiddleware,
+	)
+	sleepRouter := sleepHandler.Router(
 		authMiddleware,
 	)
 
@@ -96,10 +104,14 @@ func main() {
 		rootRouter.Handle("/api/v1/auth/", devAuthRouter)
 	}
 
-	// Mount authenticated feed routes under /api/ precedence
-	// Note: feedRouter routes are absolute (/api/v1/...), so mounting at /api/ ensures they are matched
-	// and take precedence over the root file server.
-	rootRouter.Handle("/api/", feedRouter)
+	// Mount authenticated API routes under their specific prefixes
+	// Note: routers have absolute paths (/api/v1/...), so mounting at 
+	// specific prefix ensures they take precedence over the root file server.
+	rootRouter.Handle("/api/v1/feeds", feedRouter)
+	rootRouter.Handle("/api/v1/feeds/", feedRouter)
+
+	rootRouter.Handle("/api/v1/sleeps", sleepRouter)
+	rootRouter.Handle("/api/v1/sleeps/", sleepRouter)
 
 	// Serve frontend static files using embedded filesystem
 	frontendFS, err := fs.Sub(embeddings.EmbeddedFrontend, "frontend/src")
